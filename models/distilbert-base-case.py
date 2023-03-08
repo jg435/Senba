@@ -10,16 +10,22 @@ headers = {"Authorization": f"Bearer {API_TOKEN}"}
 
 loading_speed = 4
 loading_string = "."*6
+
 def query(payload):
 	response = requests.post(API_URL, headers=headers, json=payload)
-	while response.json()[0][0].has_key("error"):
+	while ("error") in response.json()[0][0]:
 		for index, char in enumerate(loading_string):
 			sys.stdout.write(char)
 			sys.stdout.flush()
-			time.sleep(1.0/loading_speed)
-	return response.json()
+			time.sleep(1.0/loading_speed)  
+	return response.json()[0]
 
 	
-output = query({
-	"inputs": "I like you. I love you",
-})
+	
+def pipeline(raw_text):
+	payload ={}
+	payload["inputs"] = raw_text
+	query_response = query(payload)
+	return query_response
+
+#output = pipeline("please I want this to work")

@@ -11,4 +11,3 @@ keystore.properties
 fastlane/fastlane.json
 Gemfile
 Gemfile.lock
-models/config.py
