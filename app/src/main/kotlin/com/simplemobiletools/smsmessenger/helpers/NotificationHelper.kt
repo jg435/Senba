@@ -3,19 +3,21 @@ package com.simplemobiletools.smsmessenger.helpers
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_HIGH
 import android.app.PendingIntent
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.media.AudioManager
-import android.media.RingtoneManager
+import android.net.Uri
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
 import com.simplemobiletools.commons.extensions.getProperPrimaryColor
-import com.simplemobiletools.commons.extensions.notificationManager
 import com.simplemobiletools.commons.helpers.SimpleContactsHelper
 import com.simplemobiletools.commons.helpers.isNougatPlus
 import com.simplemobiletools.commons.helpers.isOreoPlus
@@ -26,17 +28,21 @@ import com.simplemobiletools.smsmessenger.messaging.isShortCodeWithLetters
 import com.simplemobiletools.smsmessenger.receivers.DirectReplyReceiver
 import com.simplemobiletools.smsmessenger.receivers.MarkAsReadReceiver
 
+
 class NotificationHelper(private val context: Context) {
 
-    private val notificationManager = context.notificationManager
-    private val soundUri get() = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+    private val applicationContext: Context = context.applicationContext
+    private val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
     private val user = Person.Builder()
         .setName(context.getString(R.string.me))
         .build()
 
     @SuppressLint("NewApi")
     fun showMessageNotification(address: String, body: String, threadId: Long, bitmap: Bitmap?, sender: String?, alertOnlyOnce: Boolean = false) {
-        maybeCreateChannel(name = context.getString(R.string.channel_received_sms))
+
+        var channelId = body
+        Log.i("TAG", channelId)
 
         val notificationId = threadId.hashCode()
         val contentIntent = Intent(context, ThreadActivity::class.java).apply {
@@ -81,7 +87,10 @@ class NotificationHelper(private val context: Context) {
         } else {
             null
         }
-        val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL).apply {
+
+        //TODO: Change channelID based on text body
+
+        val builder = NotificationCompat.Builder(context, channelId).apply {
             when (context.config.lockScreenVisibilitySetting) {
                 LOCK_SCREEN_SENDER_MESSAGE -> {
                     setLargeIcon(largeIcon)
@@ -103,7 +112,6 @@ class NotificationHelper(private val context: Context) {
             setCategory(Notification.CATEGORY_MESSAGE)
             setAutoCancel(true)
             setOnlyAlertOnce(alertOnlyOnce)
-            setSound(soundUri, AudioManager.STREAM_NOTIFICATION)
         }
 
         if (replyAction != null && context.config.lockScreenVisibilitySetting == LOCK_SCREEN_SENDER_MESSAGE) {
@@ -111,7 +119,7 @@ class NotificationHelper(private val context: Context) {
         }
 
         builder.addAction(R.drawable.ic_check_vector, context.getString(R.string.mark_as_read), markAsReadPendingIntent)
-            .setChannelId(NOTIFICATION_CHANNEL)
+            .setChannelId(channelId)
 
         notificationManager.notify(notificationId, builder.build())
     }
@@ -145,6 +153,33 @@ class NotificationHelper(private val context: Context) {
         notificationManager.notify(notificationId, builder.build())
     }
 
+    fun createChannels() {
+
+        if (isOreoPlus()) {
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
+                .build()
+
+            var sentimentChannels = listOf("disappointed", "emergency", "fear", "joy", "love", "sadness", "surprise")
+
+            for (channel in sentimentChannels) {
+                val channelSound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.packageName + "/raw/" + channel)
+                notificationManager.createNotificationChannel(
+                    NotificationChannel(channel, channel, NotificationManager.IMPORTANCE_HIGH)
+                        .apply {
+                            setBypassDnd(false)
+                            setSound(channelSound, audioAttributes)
+                            enableLights(false)
+                            enableVibration(true)
+                            setShowBadge(false)
+                        }
+                )
+            }
+        }
+    }
+
     private fun maybeCreateChannel(name: String) {
         if (isOreoPlus()) {
             val audioAttributes = AudioAttributes.Builder()
@@ -155,10 +190,11 @@ class NotificationHelper(private val context: Context) {
 
             val id = NOTIFICATION_CHANNEL
             val importance = IMPORTANCE_HIGH
+            val channelSound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.packageName + "/raw/" + "disappointed")
             NotificationChannel(id, name, importance).apply {
                 setBypassDnd(false)
                 enableLights(true)
-                setSound(soundUri, audioAttributes)
+                setSound(channelSound, audioAttributes)
                 enableVibration(true)
                 notificationManager.createNotificationChannel(this)
             }

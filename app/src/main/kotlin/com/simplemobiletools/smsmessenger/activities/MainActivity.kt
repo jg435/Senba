@@ -88,6 +88,8 @@ class MainActivity : SimpleActivity() {
             }
         }
 
+        notificationHelper.createChannels()
+
         clearAllMessagesIfNeeded()
     }
 
