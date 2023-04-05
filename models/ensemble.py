@@ -11,7 +11,7 @@ class Sentiment_Model:
         "distilbert": distilbert.Distilbert          
     }
 
-    ALERT_SCORES_LIST = alert_scores.get_alert_scores()
+    ALERT_SCORES, ALERT_FILENAMES = alert_scores.get_alert_scores_and_filenames()
 
     @staticmethod
     def get_all_sentiments_as_dict(input_string):
@@ -38,12 +38,19 @@ class Sentiment_Model:
     def pair_output_with_alert(input_string):
 
         sentiment_dict = Sentiment_Model.get_all_sentiments_as_dict(input_string)
-        sentiment_scores = list(sentiment_dict.values())
-        NUM_ALERTS = len(Sentiment_Model.ALERT_SCORES_LIST)
+        SENTIMENT_COLS = ['positive', 'negative', 'neutral', 'love', 'joy', 'sadness', 'anger', 'surprise', 'fear']
+
+        sentiment_scores = []
+        for col in SENTIMENT_COLS:
+            sentiment_scores.append(sentiment_dict[col])
+
+        NUM_ALERTS = len(Sentiment_Model.ALERT_SCORES)
 
         sentiment_scores_full = [sentiment_scores for _ in range(NUM_ALERTS)]
-        mse_full = mse(Sentiment_Model.ALERT_SCORES_LIST, sentiment_scores_full, multioutput='raw_values')
+        mse_full = mse(Sentiment_Model.ALERT_SCORES, sentiment_scores_full, multioutput='raw_values')
 
         min_mse_index = np.argmin(mse_full)
-
-        return min_mse_index
+        alert_filename = Sentiment_Model.ALERT_FILENAMES[min_mse_index]
+        
+        json_alert_filename  = json.dumps(alert_filename)
+        return json_alert_filename
