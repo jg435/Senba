@@ -2,7 +2,7 @@ import roberta_base_case as roberta
 import pandas as pd
 import sklearn.metrics
 
-df = pd.read_csv('manualTextMessageData.csv')
+df = pd.read_csv('data/final_text_messages.csv')
 thing = df.iloc[1]
 
 thisModel = roberta.Roberta

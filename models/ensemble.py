@@ -3,7 +3,7 @@ import roberta_base_case as roberta
 import distilbert_base_case as distilbert
 import json
 import numpy as np
-import sklearn.metrics.mean_squared_error as mse
+from sklearn.metrics import mean_squared_error as mse
 
 class Sentiment_Model:
     model_dict = {
