@@ -24,6 +24,3 @@ def get_alert_scores_and_filenames():
     alert_order = df['Notification Sound'].values.tolist()
 
     return alert_scores, alert_order
-
-
-get_alert_scores_and_filenames()
