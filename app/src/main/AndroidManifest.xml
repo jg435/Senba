@@ -32,7 +32,7 @@
     <uses-feature android:name="android.hardware.telephony" />
 
     <application
-        android:name=".App"
+        android:name="com.chaquo.python.android.PyApplication"
         android:allowBackup="true"
         android:appCategory="productivity"
         android:icon="@mipmap/ic_launcher"

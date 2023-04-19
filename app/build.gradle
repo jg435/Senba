@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.chaquo.python'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
@@ -19,6 +20,17 @@ android {
         versionCode 72
         versionName "5.17.4"
         setProperty("archivesBaseName", "sms-messenger")
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+        python {
+            pip {
+                install "numpy"
+                install "pandas"
+                install "scikit-learn"
+                install "requests==2.24.0"
+            }
+        }
     }
 
     signingConfigs {
@@ -62,6 +74,7 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        main.python.srcDirs += 'src/main/python'
     }
 
     lintOptions {
@@ -79,7 +92,6 @@ dependencies {
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'com.googlecode.ez-vcard:ez-vcard:0.11.3'
     implementation 'androidx.lifecycle:lifecycle-process:2.5.1'
-
     kapt "androidx.room:room-compiler:2.4.3"
     implementation "androidx.room:room-runtime:2.4.3"
     annotationProcessor "androidx.room:room-compiler:2.4.3"

@@ -17,6 +17,9 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
+import com.chaquo.python.PyObject
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import com.simplemobiletools.commons.extensions.getProperPrimaryColor
 import com.simplemobiletools.commons.helpers.SimpleContactsHelper
 import com.simplemobiletools.commons.helpers.isNougatPlus
@@ -38,11 +41,45 @@ class NotificationHelper(private val context: Context) {
         .setName(context.getString(R.string.me))
         .build()
 
+//    data class SentimentScore(
+//        val alert: String,
+//        val positive: Float,
+//        val negative: Float,
+//        val neutral: Float,
+//        val love: Float,
+//        val joy: Float,
+//        val sadness: Float,
+//        val anger: Float,
+//        val surprise: Float,
+//    )
+//
+//    @SuppressLint("NewApi")
+//    fun readAlertSoundSentimentScores() {
+//        val bufferedReader = Files.newBufferedReader(Paths.get("/resources/students.csv"))
+//        val csvParser = CSVParser(bufferedReader, CSVFormat.DEFAULT)
+////        for (csvRecord in csvParser) {
+////            val studentId = csvRecord.get(0);
+////            val studentName = csvRecord.get(1);
+////            val studentLastName = csvRecord.get(2);
+////            var studentScore = csvRecord.get(3);
+////            println(SentimentScore(studentId, studentName, studentLastName, studentScore));
+////        }
+//    }
+
+
     @SuppressLint("NewApi")
     fun showMessageNotification(address: String, body: String, threadId: Long, bitmap: Bitmap?, sender: String?, alertOnlyOnce: Boolean = false) {
 
+        // 1. Send body to python API as input
+        // 2. Get audio filename as output (variable str)
+
+        val py: Python = Python.getInstance()
+        val pyo: PyObject = py.getModule("ensemble")
+        val obj: PyObject = pyo.callAttr("pair_output_with_alert", body)
+        val str: String = obj.toString()
+
         var channelId = body
-        Log.i("TAG", channelId)
+        Log.i("Channel name", str)
 
         val notificationId = threadId.hashCode()
         val contentIntent = Intent(context, ThreadActivity::class.java).apply {
@@ -162,7 +199,7 @@ class NotificationHelper(private val context: Context) {
                 .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
                 .build()
 
-            var sentimentChannels = listOf("disappointed", "emergency", "fear", "joy", "love", "sadness", "surprise")
+            var sentimentChannels = listOf("angry", "anxious", "boom", "boss", "confused", "default_ios", "disappointed", "disappointed3", "disappointed4", "disappointed5", "disappointed2", "emergency", "emergency2", "emergency3", "exciting", "funny", "happy", "happy2", "happy3", "important_ominous", "important", "negative", "negative2", "negative3", "negative4", "ominous", "ominous2", "positive", "positive2", "positive3", "positive4", "positive5", "positive6", "quick", "sad", "sad2", "serious", "serious2", "solemn")
 
             for (channel in sentimentChannels) {
                 val channelSound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.packageName + "/raw/" + channel)
