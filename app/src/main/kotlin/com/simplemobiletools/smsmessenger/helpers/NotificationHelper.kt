@@ -75,11 +75,11 @@ class NotificationHelper(private val context: Context) {
 
         val py: Python = Python.getInstance()
         val pyo: PyObject = py.getModule("ensemble")
-        val obj: PyObject = pyo.callAttr("pair_output_with_alert", body)
-        val str: String = obj.toString()
+        val obj: PyObject = pyo.callAttr("pair_output_with_alert_separate_mse", body)
+        val fileName: String = obj.toString()
 
-        var channelId = body
-        Log.i("Channel name", str)
+        var channelId = fileName
+        Log.i("Playing channel", fileName)
 
         val notificationId = threadId.hashCode()
         val contentIntent = Intent(context, ThreadActivity::class.java).apply {
