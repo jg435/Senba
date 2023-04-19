@@ -41,32 +41,6 @@ class NotificationHelper(private val context: Context) {
         .setName(context.getString(R.string.me))
         .build()
 
-//    data class SentimentScore(
-//        val alert: String,
-//        val positive: Float,
-//        val negative: Float,
-//        val neutral: Float,
-//        val love: Float,
-//        val joy: Float,
-//        val sadness: Float,
-//        val anger: Float,
-//        val surprise: Float,
-//    )
-//
-//    @SuppressLint("NewApi")
-//    fun readAlertSoundSentimentScores() {
-//        val bufferedReader = Files.newBufferedReader(Paths.get("/resources/students.csv"))
-//        val csvParser = CSVParser(bufferedReader, CSVFormat.DEFAULT)
-////        for (csvRecord in csvParser) {
-////            val studentId = csvRecord.get(0);
-////            val studentName = csvRecord.get(1);
-////            val studentLastName = csvRecord.get(2);
-////            var studentScore = csvRecord.get(3);
-////            println(SentimentScore(studentId, studentName, studentLastName, studentScore));
-////        }
-//    }
-
-
     @SuppressLint("NewApi")
     fun showMessageNotification(address: String, body: String, threadId: Long, bitmap: Bitmap?, sender: String?, alertOnlyOnce: Boolean = false) {
 
@@ -124,8 +98,6 @@ class NotificationHelper(private val context: Context) {
         } else {
             null
         }
-
-        //TODO: Change channelID based on text body
 
         val builder = NotificationCompat.Builder(context, channelId).apply {
             when (context.config.lockScreenVisibilitySetting) {
