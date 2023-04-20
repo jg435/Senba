@@ -1,4 +1,4 @@
-import alert_scores
+import constants
 import roberta_base_case as roberta
 import distilbert_base_case as distilbert
 import json
@@ -11,7 +11,14 @@ class Sentiment_Model:
         "distilbert": distilbert.Distilbert          
     }
 
-    ALERT_SCORES, ALERT_FILENAMES = alert_scores.get_alert_scores_and_filenames()
+    # Initialize constants
+    ALERT_FILENAMES = list(constants.ALERT_DICT.keys())
+    ALERT_SCORES = np.swapaxes(np.array(list(constants.ALERT_DICT.values())),0,1)
+    NUM_ALERTS = len(ALERT_FILENAMES)
+    ROBERTA_ALERT_SCORES = ALERT_SCORES[:3, :]
+    DISTILBERT_ALERT_SCORES = ALERT_SCORES[3:, :]
+    SENTIMENT_COLS = ['positive', 'negative', 'neutral', 'love', 'joy', 'sadness', 'anger', 'surprise', 'fear']
+
 
     @staticmethod
     def get_all_sentiments_as_dict(input_string):
@@ -34,45 +41,47 @@ class Sentiment_Model:
         json_object  = json.dumps(sentiment_dict, indent = 4)
         return json_object
 
-    @staticmethod
-    def pair_output_with_alert(input_string):
-
-        sentiment_dict = Sentiment_Model.get_all_sentiments_as_dict(input_string)
-        SENTIMENT_COLS = ['positive', 'negative', 'neutral', 'love', 'joy', 'sadness', 'anger', 'surprise', 'fear']
-
-        sentiment_scores = []
-        for col in SENTIMENT_COLS:
-            sentiment_scores.append(sentiment_dict[col])
-
-        NUM_ALERTS = len(Sentiment_Model.ALERT_SCORES)
-
-        sentiment_scores_full = [sentiment_scores for _ in range(NUM_ALERTS)]
-        mse_full = mse(Sentiment_Model.ALERT_SCORES, sentiment_scores_full, multioutput='raw_values')
-
-        min_mse_index = np.argmin(mse_full)
-        alert_filename = Sentiment_Model.ALERT_FILENAMES[min_mse_index]
-
-        return alert_filename
-#         json_alert_filename  = json.dumps(alert_filename)
-#         return json_alert_filename
-
 
 def pair_output_with_alert(input_string):
     model = Sentiment_Model()
 
     sentiment_dict = model.get_all_sentiments_as_dict(input_string)
-    SENTIMENT_COLS = ['positive', 'negative', 'neutral', 'love', 'joy', 'sadness', 'anger', 'surprise', 'fear']
 
-    sentiment_scores = []
-    for col in SENTIMENT_COLS:
-        sentiment_scores.append(sentiment_dict[col])
+    sentiment_scores_full = []
+    for col in model.SENTIMENT_COLS:
+        sentiment_scores_full.append([sentiment_dict[col]]*model.NUM_ALERTS)
 
-    NUM_ALERTS = len(model.ALERT_SCORES)
-
-    sentiment_scores_full = [sentiment_scores for _ in range(NUM_ALERTS)]
     mse_full = mse(model.ALERT_SCORES, sentiment_scores_full, multioutput='raw_values')
 
     min_mse_index = np.argmin(mse_full)
     alert_filename = model.ALERT_FILENAMES[min_mse_index]
 
+    return alert_filename
+
+
+def pair_output_with_alert_separate_mse(input_string):
+    model = Sentiment_Model()
+
+    sentiment_dict = model.get_all_sentiments_as_dict(input_string)
+
+    sentiment_scores_full = []
+    for col in model.SENTIMENT_COLS:
+        sentiment_scores_full.append([sentiment_dict[col]]*model.NUM_ALERTS)
+
+    # 1) MSE for ROBERTA: 3 labels (pos, neg, neutral)
+    roberta_scores_full = np.array(sentiment_scores_full)[:3, :]
+    mse_roberta = mse(model.ROBERTA_ALERT_SCORES, roberta_scores_full, multioutput='raw_values')
+
+    # 2) MSE for DISTILBERT: 6 labels (love, joy, sadness, anger, surprise, fear)
+    distilbert_scores_full = np.array(sentiment_scores_full)[3:, :]
+    mse_distilbert = mse(model.DISTILBERT_ALERT_SCORES, distilbert_scores_full, multioutput='raw_values')
+
+    if np.min(mse_roberta) < np.min(mse_distilbert):
+        print(f'Roberta selected: {mse_roberta}')
+        min_mse_index = np.argmin(mse_roberta)
+    else:
+        print(f'Distilbert selected: {mse_distilbert}')
+        min_mse_index = np.argmin(mse_distilbert)
+
+    alert_filename = model.ALERT_FILENAMES[min_mse_index]
     return alert_filename
