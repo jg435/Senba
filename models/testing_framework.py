@@ -9,7 +9,7 @@ thisModel = roberta.Roberta
 
 testString = "This is my test string"
 
-testPipeline = thisModel.pipeline(testString)
+testPipeline = thisModel.pipeline("sentiment-analysis",model="siebert/sentiment-roberta-large-english")#thisModel.pipeline(testString)
 
 def getHFScoreDictFromPipeline(pipelineData):
     sentimentDict = {}

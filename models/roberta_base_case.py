@@ -4,7 +4,7 @@ import sys
 import time
 
 class Roberta:
-    API_URL = "https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment-latest"
+    API_URL = "https://api-inference.huggingface.co/models/siebert/sentiment-roberta-large-english"
     headers = {"Authorization": f"Bearer {config.HF_API_KEY}"}
     loading_speed = 4
     loading_string = "."*6
