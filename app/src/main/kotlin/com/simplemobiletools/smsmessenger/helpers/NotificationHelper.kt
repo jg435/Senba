@@ -171,7 +171,7 @@ class NotificationHelper(private val context: Context) {
                 .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
                 .build()
 
-            var sentimentChannels = listOf("angry", "anxious", "boom", "boss", "confused", "default_ios", "disappointed", "disappointed3", "disappointed4", "disappointed5", "disappointed2", "emergency", "emergency2", "emergency3", "exciting", "funny", "happy", "happy2", "happy3", "important_ominous", "important", "negative", "negative2", "negative3", "negative4", "ominous", "ominous2", "positive", "positive2", "positive3", "positive4", "positive5", "positive6", "quick", "sad", "sad2", "serious", "serious2", "solemn")
+            var sentimentChannels = listOf("angry", "anxious", "boom", "boss", "confused", "default_ios", "disappointed", "disappointed3", "disappointed4", "disappointed5", "disappointed2", "emergency", "emergency2", "emergency3", "exciting", "funny", "happy", "happy2", "happy3", "important_ominous", "important", "negative", "negative2", "negative3", "negative4", "ominous", "ominous2", "positive", "positive2", "positive3", "positive4", "positive5", "positive6", "quick", "sad", "sad2", "serious", "serious2", "solemn", "spam")
 
             for (channel in sentimentChannels) {
                 val channelSound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.packageName + "/raw/" + channel)

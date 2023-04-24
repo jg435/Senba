@@ -1,12 +1,14 @@
 import constants
 import roberta_base_case as roberta
 import distilbert_base_case as distilbert
+import spam_detection as spam
 import json
 import numpy as np
 from sklearn.metrics import mean_squared_error as mse
 
 class Sentiment_Model:
     model_dict = {
+        "spam": spam.SpamDetection,
         "roberta":  roberta.Roberta,
         "distilbert": distilbert.Distilbert          
     }
@@ -63,6 +65,10 @@ def pair_output_with_alert_separate_mse(input_string):
     model = Sentiment_Model()
 
     sentiment_dict = model.get_all_sentiments_as_dict(input_string)
+
+    # Spam Detection
+    if sentiment_dict['LABEL_1'] >= 0.7:
+        return "spam"
 
     sentiment_scores_full = []
     for col in model.SENTIMENT_COLS:
